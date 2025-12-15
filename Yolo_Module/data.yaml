@@ -1,0 +1,7 @@
+# YOLO Dataset Configuration
+path: /media/rishikesh/Rishi/number_plate_model/data_plate
+train: images/train
+val: images/val
+
+names: {0: 'number_plate'}
+nc: 1

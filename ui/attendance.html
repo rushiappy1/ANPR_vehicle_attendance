@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            display: block;
+        }
+
+        .status.loading {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #0c5460;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .result-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .home-btn {
+            margin-top: 20px;
+            background: #6c757d;
+        }
+
+        .home-btn:hover:not(:disabled) {
+            box-shadow: 0 5px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        .field-info {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1> Mark Attendance</h1>
+        <p class="subtitle">Upload vehicle image to mark attendance</p>
+
+        <form id="attendanceForm" enctype="multipart/form-data">
+            <!-- Image Upload -->
+            <div class="form-group">
+                <label for="image">Vehicle Image *</label>
+                <input 
+                    type="file" 
+                    id="image" 
+                    name="image" 
+                    accept="image/*" 
+                    required
+                >
+                <p class="field-info">Upload a clear image with visible vehicle number plate</p>
+                <img id="imagePreview" class="preview-img" alt="Preview">
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn" id="submitBtn">
+                Mark Attendance
+            </button>
+
+            <!-- Status Message -->
+            <div id="status" class="status"></div>
+
+            <!-- Result Details -->
+            <div id="resultBox" class="result-box">
+                <div class="result-item">
+                    <span class="result-label">Vehicle Number:</span>
+                    <span class="result-value" id="vehicleNumber">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Owner Name:</span>
+                    <span class="result-value" id="ownerName">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Time:</span>
+                    <span class="result-value" id="timestamp">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Status:</span>
+                    <span class="result-value" id="attendanceStatus"> Present</span>
+                </div>
+            </div>
+
+            <!-- Register Link -->
+            <div class="register-link">
+                <p style="color: #666; font-size: 13px; margin-bottom: 10px;">Vehicle not registered?</p>
+                <a href="/register">Register New Vehicle →</a>
+            </div>
+
+            <!-- Home Button -->
+            <button type="button" class="btn home-btn" onclick="window.location.href = '/'">
+                ← Back to Home
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('attendanceForm');
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('imagePreview');
+        const status = document.getElementById('status');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultBox = document.getElementById('resultBox');
+
+        // Image preview
+        imageInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Validation
+            if (!imageInput.files[0]) {
+                showStatus('Please select an image', 'error');
+                return;
+            }
+
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('image', imageInput.files[0]);
+
+            // Show loading
+            submitBtn.disabled = true;
+            showStatus('<span class="loader"></span>Processing attendance...', 'loading');
+            resultBox.classList.remove('show');
+
+            try {
+                const response = await fetch('/api/mark-attendance', {
+                    method: 'POST',
+                    body: formData
+                    // NOTE: Do NOT set Content-Type header - browser will set it correctly
+                });
+
+                const data = await response.json();
+
+                console.log('Response:', data);
+                console.log('Status:', response.status);
+
+                if (data.success) {
+                    // Show success message
+                    showStatus(` ${data.message}`, 'success');
+
+                    // Display result details
+                    document.getElementById('vehicleNumber').textContent = data.vehicle_number;
+                    document.getElementById('ownerName').textContent = data.owner_name;
+                    document.getElementById('timestamp').textContent = new Date(data.timestamp).toLocaleString();
+                    resultBox.classList.add('show');
+
+                    // Reset form after 3 seconds
+                    // setTimeout(() => {
+                    //     form.reset();
+                    //     imagePreview.style.display = 'none';
+                    //     resultBox.classList.remove('show');
+                    //     showStatus('');
+                    // }, 3000);
+                } else {
+                    // Show error or warning
+                    const messageType = response.status === 403 ? 'warning' : 'error';
+                    showStatus(`${data.message}`, messageType);
+                    
+                    // If unregistered, show vehicle number that was detected
+                    if (data.detected_vehicle) {
+                        const details = `
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid;">
+                                <strong>Detected:</strong> ${data.detected_vehicle}
+                            </div>
+                        `;
+                        status.innerHTML += details;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(` Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        function showStatus(message, type) {
+            status.innerHTML = message;
+            status.className = `status ${type}`;
+        }
+    </script>
+</body>
+</html>
