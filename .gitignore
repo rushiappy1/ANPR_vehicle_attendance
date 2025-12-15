@@ -103,3 +103,6 @@ ehthumbs.db
 # Git
 .git/
 
+*.pt
+*.pth
+*.onnx
